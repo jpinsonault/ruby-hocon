@@ -17,6 +17,7 @@ class Hocon::Impl::SimpleConfig
   def initialize(object)
     @object = object
   end
+  attr_reader :object
 
   def root
     @object
@@ -58,6 +59,18 @@ class Hocon::Impl::SimpleConfig
       raise "Error: object o is nil" unless not o.nil?
       find(o, rest, expected, original_path)
     end
+  end
+
+  def ==(other)
+    if other.is_a? Hocon::Impl::SimpleConfig
+      @object == other.object
+    else
+      false
+    end
+  end
+
+  def hash
+    41 * @object.hash
   end
 
   def get_value(path)

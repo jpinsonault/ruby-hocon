@@ -1,11 +1,16 @@
 require 'hocon'
 require 'spec_helper'
+require 'rspec'
 
 module TestUtils
   Tokens = Hocon::Impl::Tokens
+  ConfigInt = Hocon::Impl::ConfigInt
+  ConfigFloat = Hocon::Impl::ConfigFloat
+  ConfigReference = Hocon::Impl::ConfigReference
   Path = Hocon::Impl::Path
   EOF = Hocon::Impl::TokenType::EOF
 
+  include RSpec::Matchers
 
   ##################
   # Tokenizer Functions
@@ -85,6 +90,26 @@ module TestUtils
     token_substitution(token_string(value))
   end
 
+  ##################
+  # ConfigValue helpers
+  ##################
+  def TestUtils.int_value(value)
+    ConfigInt.new(fake_origin, value, nil)
+  end
+
+  def TestUtils.float_value(value)
+    ConfigFloat.new(fake_origin, value, nil)
+  end
+
+  def TestUtils.config_map(input_map)
+    # Turns {String: Int} maps into {String: ConfigInt} maps
+    Hash[ input_map.map { |k, v| [k, int_value(v)] } ]
+  end
+
+  def TestUtils.subst(ref, optional = false)
+    path = Path.new_path(ref)
+    ConfigReference.new(fake_origin, SubstitutionExpression(path, optional))
+  end
 
   ##################
   # Token Functions
@@ -107,6 +132,55 @@ module TestUtils
     # the parser; in the test suite we are often testing the parser,
     # so we don't want to use the parser to build the expected result.
     Path.from_string_list(elements)
+  end
+
+  ##################
+  # RSpec Tests
+  ##################
+  def TestUtils.check_equal_objects(first_object, second_object)
+    it "should find the two objects to be equal" do
+      not_equal_to_anything_else = TestUtils::NotEqualToAnythingElse.new
+
+      # Equality
+      expect(first_object).to eq(second_object)
+      expect(second_object).to eq(first_object)
+
+      # Hashes
+      expect(first_object.hash).to eq(second_object.hash)
+
+      # Other random object
+      expect(first_object).not_to eq(not_equal_to_anything_else)
+      expect(not_equal_to_anything_else).not_to eq(first_object)
+
+      expect(second_object).not_to eq(not_equal_to_anything_else)
+      expect(not_equal_to_anything_else).not_to eq(second_object)
+    end
+  end
+
+  def TestUtils.check_not_equal_objects(first_object, second_object)
+
+    it "should find the two objects to be not equal" do
+      not_equal_to_anything_else = TestUtils::NotEqualToAnythingElse.new
+
+      # Equality
+      expect(first_object).not_to eq(second_object)
+      expect(second_object).not_to eq(first_object)
+
+      # Hashes
+      # hashcode inequality isn't guaranteed, but
+      # as long as it happens to work it might
+      # detect a bug (if hashcodes are equal,
+      # check if it's due to a bug or correct
+      # before you remove this)
+      expect(first_object.hash).not_to eq(second_object.hash)
+
+      # Other random object
+      expect(first_object).not_to eq(not_equal_to_anything_else)
+      expect(not_equal_to_anything_else).not_to eq(first_object)
+
+      expect(second_object).not_to eq(not_equal_to_anything_else)
+      expect(not_equal_to_anything_else).not_to eq(second_object)
+    end
   end
 end
 
@@ -142,7 +216,7 @@ shared_examples_for "object_equality" do
     expect(second_object).to eq(first_object)
   end
 
-  it "should the hash codes of the two objects to be equal" do
+  it "should find the hash codes of the two objects to be equal" do
     expect(first_object.hash).to eq(second_object.hash)
   end
 
@@ -160,7 +234,7 @@ shared_examples_for "object_inequality" do
     expect(second_object).not_to eq(first_object)
   end
 
-  it "should the hash codes of the two objects to not be equal" do
+  it "should find the hash codes of the two objects to not be equal" do
     # hashcode inequality isn't guaranteed, but
     # as long as it happens to work it might
     # detect a bug (if hashcodes are equal,
