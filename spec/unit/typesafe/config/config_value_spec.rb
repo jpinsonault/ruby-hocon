@@ -6,6 +6,7 @@ require 'test_utils'
 SimpleConfigOrigin = Hocon::Impl::SimpleConfigOrigin
 SimpleConfigObject = Hocon::Impl::SimpleConfigObject
 SimpleConfigList = Hocon::Impl::SimpleConfigList
+SubstitutionExpression = Hocon::Impl::SubstitutionExpression
 ConfigReference = Hocon::Impl::ConfigReference
 
 describe "SimpleConfigOrigin equality" do

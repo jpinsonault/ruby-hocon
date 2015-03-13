@@ -1,12 +1,15 @@
 require 'hocon'
 require 'spec_helper'
 require 'rspec'
+require 'hocon/impl/config_reference'
+require 'hocon/impl/substitution_expression'
 
 module TestUtils
   Tokens = Hocon::Impl::Tokens
   ConfigInt = Hocon::Impl::ConfigInt
   ConfigFloat = Hocon::Impl::ConfigFloat
   ConfigReference = Hocon::Impl::ConfigReference
+  SubstitutionExpression = Hocon::Impl::SubstitutionExpression
   Path = Hocon::Impl::Path
   EOF = Hocon::Impl::TokenType::EOF
 
@@ -108,7 +111,7 @@ module TestUtils
 
   def TestUtils.subst(ref, optional = false)
     path = Path.new_path(ref)
-    ConfigReference.new(fake_origin, SubstitutionExpression(path, optional))
+    ConfigReference.new(fake_origin, SubstitutionExpression.new(path, optional))
   end
 
   ##################
