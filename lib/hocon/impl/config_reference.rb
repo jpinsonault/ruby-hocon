@@ -16,8 +16,30 @@ class Hocon::Impl::ConfigReference < Hocon::Impl::AbstractConfigValue
     Hocon::ConfigError::ConfigNotResolvedError.new(error_message, nil)
   end
 
+  def value_type
+    raise self.class.not_resolved
+  end
+
   def unwrapped
     raise self.class.not_resolved
+  end
+
+  def new_copy(new_origin)
+    Hocon::Impl::ConfigReference.new(new_origin, @expr, @prefix_length)
+  end
+
+  def ignores_fallbacks
+    false
+  end
+
+  def resolve_status
+    Hocon::Impl::ResolveStatus::UNRESOLVED
+  end
+
+  def relativized(prefix)
+    new_expr = @expr.change_path(@expr.path,prepend(prefix))
+
+    Hocon::Impl::ConfigReference.new(origin, new_expr, @prefix_length + prefix.length)
   end
 
   def can_equal(other)
@@ -29,6 +51,15 @@ class Hocon::Impl::ConfigReference < Hocon::Impl::AbstractConfigValue
     if other.is_a? Hocon::Impl::ConfigReference
       can_equal(other) && @expr == other.expr
     end
+  end
+
+  def hash
+    # note that "origin" is deliberately NOT part of equality
+    @expr.hash
+  end
+
+  def render(sb, indent, at_root, options)
+    sb.append(@expr.to_s)
   end
 
 end
