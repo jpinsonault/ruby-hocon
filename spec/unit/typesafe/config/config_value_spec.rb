@@ -288,3 +288,40 @@ describe "ConfigReference equality" do
     include_examples "object_inequality"
   end
 end
+
+describe "ConfigConcatenation equality" do
+  a = TestUtils.subst_in_string("foo")
+  same_as_a = TestUtils.subst_in_string("foo")
+  b = TestUtils.subst_in_string("bar")
+  c = TestUtils.subst_in_string("foo", true)
+
+  specify "testing values are of the right type" do
+    expect(a).to be_instance_of(ConfigReference)
+    expect(b).to be_instance_of(ConfigReference)
+    expect(c).to be_instance_of(ConfigReference)
+  end
+
+  context "a equals a" do
+    let(:first_object) { a }
+    let(:second_object) { a }
+    include_examples "object_equality"
+  end
+
+  context "a equals same_as_a" do
+    let(:first_object) { a }
+    let(:second_object) { same_as_a }
+    include_examples "object_equality"
+  end
+
+  context "a doesn't equal b" do
+    let(:first_object) { a }
+    let(:second_object) { b }
+    include_examples "object_inequality"
+  end
+
+  context "a doesn't equal c, an optional substitution" do
+    let(:first_object) { a }
+    let(:second_object) { c }
+    include_examples "object_inequality"
+  end
+end

@@ -43,7 +43,9 @@ class Hocon::Impl::AbstractConfigValue
   end
 
   def with_origin(origin)
-    if @origin == origin
+    # We want to compare object the two objects, not call into
+    # SimpleConfigOrigin's overloaded == operator
+    if @origin.eql?(origin)
       self
     else
       new_copy(origin)
